@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PatientTherapistDTO } from 'src/therapist/controllers/therapist/PatientTherapistDTO.entity';
+import { PatientTherapistDTO } from 'src/therapist/controllers/therapist/DTO/PatientTherapistDTO.entity';
 import { Patient } from 'src/therapist/entity/Patient.entity';
 import {
     PatientTherapist,
@@ -13,10 +13,12 @@ import {
 } from 'src/therapist/entity/PatientTherapist.entity';
 import { Therapist } from 'src/therapist/entity/Therapist.entity';
 import { Repository } from 'typeorm';
-import { PatientDTO } from '../../controllers/therapist/patientDTO.entity';
+import { TherapistFormDTO } from 'src/therapist/controllers/therapist/DTO/TherapistFormDTO.entity';
+import { PatientDTO } from 'src/therapist/controllers/therapist/DTO/PatientDTO.entity';
 
 @Injectable()
 export class TherapistService {
+
     constructor(
         @InjectRepository(Patient)
         private readonly patientRepository: Repository<Patient>,
@@ -36,6 +38,21 @@ export class TherapistService {
 
         if (!therapist) return false;
         return true;
+    }
+
+    async createTherapist(
+        keycloakUser: KeycloakUser,
+        therapistFormDTO: TherapistFormDTO,
+    ) {
+        const { sub } = keycloakUser;
+        const therapistDTO = {
+            keycloakId: sub,
+            firstName: therapistFormDTO.firstName,
+            lastName: therapistFormDTO.lastName,
+            address: therapistFormDTO.address,
+        }
+        const therapist = await this.therapistRepository.save(therapistDTO);
+        return therapist;
     }
 
     async findTherapist(keycloakId: string) {

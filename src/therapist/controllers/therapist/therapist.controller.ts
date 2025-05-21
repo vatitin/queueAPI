@@ -15,8 +15,9 @@ import { AuthenticatedUser, AuthGuard } from 'nest-keycloak-connect';
 import { Patient } from 'src/therapist/entity/Patient.entity';
 import { StatusType } from 'src/therapist/entity/PatientTherapist.entity';
 import { TherapistService } from '../../services/therapist/therapist.service';
-import { PatientDTO } from './patientDTO.entity';
+import { PatientDTO } from './DTO/PatientDTO.entity';
 import { StatusTypeValidationPipe } from './statusType.validation.pipe';
+import { TherapistFormDTO } from './DTO/TherapistFormDTO.entity';
 
 @UseGuards(AuthGuard)
 @Controller('therapist')
@@ -94,5 +95,10 @@ export class TherapistController {
     @Get('hasLocalTherapist')
     async hasLocalTherapist(@AuthenticatedUser() therapist: KeycloakUser) {
         return await this.therapistService.hasLocalTherapist(therapist);
+    }
+
+    @Post('createTherapist')
+    async createTherapist(@AuthenticatedUser() therapist: KeycloakUser, therapistForm: TherapistFormDTO) {
+        return await this.therapistService.createTherapist(therapist, therapistForm);
     }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RegisterDTO } from 'src/therapist/controllers/therapist/RegisterDTO.entity';
+import { RegisterDTO } from 'src/therapist/controllers/therapist/DTO/RegisterDTO.entity';
 import { ConfigService } from '@nestjs/config';
 import { KeycloakAdminClient } from '@s3pweb/keycloak-admin-client-cjs';
 
