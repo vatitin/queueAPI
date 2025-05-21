@@ -90,4 +90,9 @@ export class TherapistController {
         const { patient } = await this.therapistService.getPatient(id, userId);
         return patient;
     }
+
+    @Get('hasLocalTherapist')
+    async hasLocalTherapist(@AuthenticatedUser() therapist: KeycloakUser) {
+        return await this.therapistService.hasLocalTherapist(therapist);
+    }
 }

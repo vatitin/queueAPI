@@ -28,16 +28,23 @@ export class TherapistService {
         private readonly patientTherapistRepository: Repository<PatientTherapist>,
     ) {}
 
-    async findOrCreateTherapist(keycloakId: string) {
+    async hasLocalTherapist(keycloakUser: KeycloakUser) {
+        const { sub } = keycloakUser;
+        const therapist = await this.therapistRepository.findOne({
+            where: { keycloakId: sub },
+        });
+
+        if (!therapist) return false;
+        return true;
+    }
+
+    async findTherapist(keycloakId: string) {
         let therapist = await this.therapistRepository.findOne({
             where: { keycloakId },
         });
-
         if (!therapist) {
-            therapist = this.therapistRepository.create({ keycloakId });
-            therapist = await this.therapistRepository.save(therapist);
+            throw new NotFoundException('Therapist not found');
         }
-
         return therapist;
     }
 
@@ -47,11 +54,7 @@ export class TherapistService {
         status: StatusType,
     ) {
         patientDTO.isRegistered = false;
-        const therapist = await this.findOrCreateTherapist(therapistKeycloakId);
-
-        if (!therapist) {
-            throw new BadRequestException('Therapist wurde nicht gefunden');
-        }
+        const therapist = await this.findTherapist(therapistKeycloakId);
 
         const patient = await this.patientRepository.save(patientDTO);
 

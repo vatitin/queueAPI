@@ -1,11 +1,8 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-    AuthGuard,
     KeycloakConnectModule,
     PolicyEnforcementMode,
-    RoleGuard,
     TokenValidation,
 } from 'nest-keycloak-connect';
 import { Patient } from 'src/therapist/entity/Patient.entity';
@@ -20,7 +17,7 @@ import { TherapistService } from 'src/therapist/services/therapist/therapist.ser
             authServerUrl: 'http://localhost:8080',
             realm: 'patient-therapist-platform',
             clientId: 'backend-client',
-            secret: process.env.KEYCLOAK_CLIENT_SECRET ?? '',
+            secret: 'HQRcZCbVoN8mKd6puDNyOYWTULauM7Vo', //todo change secret and use in env
             //todo change permissive to sth else
             policyEnforcement: PolicyEnforcementMode.PERMISSIVE,
             //todo maybe user ONLINE, needs to be checked
@@ -30,14 +27,6 @@ import { TherapistService } from 'src/therapist/services/therapist/therapist.ser
     ],
     providers: [
         TherapistService,
-        {
-            provide: APP_GUARD,
-            useClass: AuthGuard,
-        },
-        {
-            provide: APP_GUARD,
-            useClass: RoleGuard,
-        },
     ],
     exports: [KeycloakConnectModule],
     controllers: [],
