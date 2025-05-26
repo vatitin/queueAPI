@@ -11,11 +11,11 @@ import { TherapistModule } from './therapist/therapist.module';
     imports: [
         TherapistModule,
         TypeOrmModule.forRoot({
-            type: 'mysql',
+            type: 'postgres',
             host: 'localhost',
-            port: 3306,
+            port: 5432,
             username: 'myuser',
-            password: 'myuserpassword',
+            password: 'myuserpass',
             database: 'mydatabase',
             entities: [Therapist, Patient, PatientTherapist],
             //todo set this to false before production
