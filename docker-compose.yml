@@ -4,7 +4,7 @@ services:
   db:
   #todo check if this is the latest postgres version
   #todo adjust sensitive data like user, password, and database name
-    image: postgres:17
+    image: postgis/postgis:17-3.5-alpine # Using a stable, smaller image with alpine for efficiency
     restart: always
     environment:
       POSTGRES_USER: myuser
@@ -15,22 +15,24 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
-  app:
-    build: .
-    command: npm run start:prod
-    depends_on:
-      - db
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USERNAME: myuser
-      DB_PASSWORD: mypass
-      DB_DATABASE: platformDB
-    ports:
-      - '3000:3000'
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
+  # app:
+  #   build: .
+  #   command: npm run start:prod
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     # NODE_ENV: development # todo Example: uncomment and set to 'production' for prod builds
+
+  #     DB_HOST: db
+  #     DB_PORT: 5432
+  #     DB_USERNAME: myuser
+  #     DB_PASSWORD: mypass
+  #     DB_DATABASE: platformDB
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
 
 volumes:
   db-data:

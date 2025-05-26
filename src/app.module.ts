@@ -15,8 +15,8 @@ import { TherapistModule } from './therapist/therapist.module';
             host: 'localhost',
             port: 5432,
             username: 'myuser',
-            password: 'myuserpass',
-            database: 'mydatabase',
+            password: 'mypass',
+            database: 'platformDB',
             entities: [Therapist, Patient, PatientTherapist],
             //todo set this to false before production
             synchronize: true,
