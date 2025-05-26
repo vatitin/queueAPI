@@ -1,4 +1,6 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { GeoPointDto } from './GeoPointDTO.entity';
 
 export class TherapistFormDTO {
     @IsString()
@@ -24,4 +26,8 @@ export class TherapistFormDTO {
     @IsString()
     @IsNotEmpty()
     postalCode: string;
+
+    @ValidateNested()
+    @Type(() => GeoPointDto)
+    location: GeoPointDto;
 }

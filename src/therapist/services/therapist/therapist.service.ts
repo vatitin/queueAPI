@@ -59,6 +59,10 @@ export class TherapistService {
             addressLine2: therapistFormDTO.addressLine2,
             city: therapistFormDTO.city,
             postalCode: therapistFormDTO.postalCode,
+            location: {
+                type: 'Point',
+                coordinates: [10.1234, 51.5678],
+            },
         }
         const therapist = await this.therapistRepository.save(therapistDTO);
         return therapist;

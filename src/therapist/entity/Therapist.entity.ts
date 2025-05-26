@@ -2,9 +2,9 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Length,
 } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Point, Geometry } from 'geojson'; 
 
 @Entity()
 export class Therapist {
@@ -43,4 +43,12 @@ export class Therapist {
   @IsString()
   @IsNotEmpty()
   postalCode: string;
+
+  @Column({
+  type: 'geography',  
+  spatialFeatureType: 'Point', 
+  srid: 4326,            
+  nullable: true,     
+  })
+  location: Point;
 }
