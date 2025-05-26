@@ -15,6 +15,7 @@ import { Therapist } from 'src/therapist/entity/Therapist.entity';
 import { Repository } from 'typeorm';
 import { TherapistFormDTO } from 'src/therapist/controllers/therapist/DTO/TherapistFormDTO.entity';
 import { PatientDTO } from 'src/therapist/controllers/therapist/DTO/PatientDTO.entity';
+import { TherapistDTO } from 'src/therapist/controllers/therapist/DTO/TherapistDTO.entity';
 
 @Injectable()
 export class TherapistService {
@@ -44,12 +45,20 @@ export class TherapistService {
         keycloakUser: KeycloakUser,
         therapistFormDTO: TherapistFormDTO,
     ) {
+        if(await this.hasLocalTherapist(keycloakUser)) {
+            throw new BadRequestException(
+                'Therapist already exists for this user',
+            );
+        }
         const { sub } = keycloakUser;
-        const therapistDTO = {
+        const therapistDTO: TherapistDTO = {
             keycloakId: sub,
             firstName: therapistFormDTO.firstName,
             lastName: therapistFormDTO.lastName,
-            address: therapistFormDTO.address,
+            addressLine1: therapistFormDTO.addressLine1,
+            addressLine2: therapistFormDTO.addressLine2,
+            city: therapistFormDTO.city,
+            postalCode: therapistFormDTO.postalCode,
         }
         const therapist = await this.therapistRepository.save(therapistDTO);
         return therapist;

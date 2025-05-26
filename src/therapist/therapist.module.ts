@@ -6,7 +6,6 @@ import { Patient } from './entity/Patient.entity';
 import { PatientTherapist } from './entity/PatientTherapist.entity';
 import { Therapist } from './entity/Therapist.entity';
 import { TherapistService } from './services/therapist/therapist.service';
-import { AuthService } from './services/therapist/auth.service';
 
 @Module({
     imports: [
@@ -14,6 +13,6 @@ import { AuthService } from './services/therapist/auth.service';
         AuthModule,
     ],
     controllers: [TherapistController],
-    providers: [TherapistService, AuthService],
+    providers: [TherapistService],
 })
 export class TherapistModule {}

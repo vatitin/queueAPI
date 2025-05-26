@@ -10,6 +10,18 @@ export class TherapistFormDTO {
     lastName: string;
 
     @IsString()
+    @IsNotEmpty()
+    addressLine1: string;
+
+    @IsString()
     @IsOptional()
-    address: string;
+    addressLine2: string;
+    
+    @IsString()
+    @IsNotEmpty()
+    city: string;
+
+    @IsString()
+    @IsNotEmpty()
+    postalCode: string;
 }

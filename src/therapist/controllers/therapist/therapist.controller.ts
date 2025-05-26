@@ -98,7 +98,7 @@ export class TherapistController {
     }
 
     @Post('createTherapist')
-    async createTherapist(@AuthenticatedUser() therapist: KeycloakUser, therapistForm: TherapistFormDTO) {
+    async createTherapist(@AuthenticatedUser() therapist: KeycloakUser, @Body() therapistForm: TherapistFormDTO) {
         return await this.therapistService.createTherapist(therapist, therapistForm);
     }
 }
