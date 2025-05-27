@@ -12,7 +12,7 @@ import {
     StatusType,
 } from 'src/therapist/entity/PatientTherapist.entity';
 import { Therapist } from 'src/therapist/entity/Therapist.entity';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { TherapistFormDTO } from 'src/therapist/controllers/therapist/DTO/TherapistFormDTO.entity';
 import { PatientDTO } from 'src/therapist/controllers/therapist/DTO/PatientDTO.entity';
 import { TherapistDTO } from 'src/therapist/controllers/therapist/DTO/TherapistDTO.entity';
@@ -200,4 +200,22 @@ export class TherapistService {
             message: 'Patient-Therapist relation removed',
         };
     }
+
+  async getAllLocations(): Promise<
+    Array<{ id: number; latitude: number; longitude: number }>
+  > {
+    // load just id + location
+    const therapists = await this.therapistRepository.find({
+      select: ['id', 'location'],
+    });
+
+    return therapists
+      .filter((t) => !!t.location && Array.isArray(t.location.coordinates))
+      .map((t) => ({
+        id: Number(t.id),
+        // GeoJSON order is [lng, lat]
+        longitude: t.location.coordinates[0],
+        latitude: t.location.coordinates[1],
+      }));
+  }
 }
