@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
-import { StatusType } from 'src/therapist/entity/PatientTherapist.entity';
+import { StatusType } from 'src/association/entity';
 
 @Injectable()
 export class StatusTypeValidationPipe

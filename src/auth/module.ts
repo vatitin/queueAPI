@@ -5,10 +5,6 @@ import {
     PolicyEnforcementMode,
     TokenValidation,
 } from 'nest-keycloak-connect';
-import { Patient } from 'src/therapist/entity/Patient.entity';
-import { PatientTherapist } from 'src/therapist/entity/PatientTherapist.entity';
-import { Therapist } from 'src/therapist/entity/Therapist.entity';
-import { TherapistService } from 'src/therapist/services/therapist/therapist.service';
 
 @Module({
     imports: [
@@ -23,12 +19,7 @@ import { TherapistService } from 'src/therapist/services/therapist/therapist.ser
             //todo maybe user ONLINE, needs to be checked
             tokenValidation: TokenValidation.ONLINE,
         }),
-        TypeOrmModule.forFeature([Patient, Therapist, PatientTherapist]),
-    ],
-    providers: [
-        TherapistService,
     ],
     exports: [KeycloakConnectModule],
-    controllers: [],
 })
 export class AuthModule {}

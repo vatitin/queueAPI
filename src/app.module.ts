@@ -1,15 +1,21 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
-import { Patient } from './therapist/entity/Patient.entity';
-import { PatientTherapist } from './therapist/entity/PatientTherapist.entity';
-import { Therapist } from './therapist/entity/Therapist.entity';
-import { TherapistModule } from './therapist/therapist.module';
+import { AuthModule } from './auth/module';
+import { Patient } from './patient/entity';
+import { Association } from './association/entity';
+import { Therapist } from './therapist/entity';
+import { TherapistModule } from './therapist/module';
+import { PatientModule } from './patient/module';
+import { AssociationModule } from './association/module';
+import { DomainModule } from './domain/module';
 
 @Module({
     imports: [
         TherapistModule,
+        PatientModule,
+        AssociationModule,
+        DomainModule,
+        AuthModule,
         TypeOrmModule.forRoot({
             type: 'postgres',
             host: 'localhost',
@@ -17,16 +23,10 @@ import { TherapistModule } from './therapist/therapist.module';
             username: 'myuser',
             password: 'mypass',
             database: 'platformDB',
-            entities: [Therapist, Patient, PatientTherapist],
+            entities: [Therapist, Patient, Association],
             //todo set this to false before production
             synchronize: true,
         }),
-        AuthModule,
-        ConfigModule.forRoot({
-            isGlobal: true,
-        }),
     ],
-    controllers: [],
-    providers: [],
 })
 export class AppModule {}

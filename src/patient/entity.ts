@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Association } from 'src/association/entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 export type GenderType = 'M' | 'W' | 'D';
 
@@ -24,4 +25,10 @@ export class Patient {
 
     @Column({ length: 32, nullable: true })
     gender: GenderType;
+
+    @OneToMany(
+    () => Association,
+        association => association.patient,
+    )
+    associations: Association[];
 }

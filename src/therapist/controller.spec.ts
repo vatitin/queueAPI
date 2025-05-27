@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthGuard } from 'nest-keycloak-connect';
-import { GenderType } from 'src/therapist/entity/Patient.entity';
-import { StatusType } from 'src/therapist/entity/PatientTherapist.entity';
-import { TherapistController } from '../../controllers/therapist/therapist.controller';
-import { TherapistService } from '../../services/therapist/therapist.service';
+import { GenderType } from 'src/patient/entity';
+import { StatusType } from 'src/association/entity';
+import { TherapistController } from './controller';
+import { TherapistService } from './worfklow.service';
 
 // ------------------------------
 // Create a mock for TherapistService.

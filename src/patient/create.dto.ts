@@ -1,5 +1,5 @@
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { GenderType } from 'src/therapist/entity/Patient.entity';
+import { GenderType } from 'src/patient/entity';
 
 export class PatientDTO {
     @IsString()

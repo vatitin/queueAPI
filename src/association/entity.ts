@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Patient } from './Patient.entity';
-import { Therapist } from './Therapist.entity';
+import { Patient } from '../patient/entity';
+import { Therapist } from '../therapist/entity';
 
 export enum StatusType {
     ACTIVE = 'active',
@@ -9,15 +9,17 @@ export enum StatusType {
 }
 
 @Entity()
-export class PatientTherapist {
+export class Association {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Patient, (patient) => patient.id, { nullable: false })
+    @ManyToOne(() => Patient, (patient) => patient.id, { 
+        nullable: false, onDelete: 'CASCADE', 
+    })
     patient: Patient;
 
     @ManyToOne(() => Therapist, (therapist) => therapist.id, {
-        nullable: false,
+        nullable: false, onDelete: 'CASCADE', 
     })
     therapist: Therapist;
 

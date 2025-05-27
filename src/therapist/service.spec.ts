@@ -1,14 +1,14 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { GenderType, Patient } from 'src/therapist/entity/Patient.entity';
+import { GenderType, Patient } from 'src/patient/entity';
 import {
-    PatientTherapist,
+    Association,
     StatusType,
-} from 'src/therapist/entity/PatientTherapist.entity';
-import { Therapist } from 'src/therapist/entity/Therapist.entity';
+} from 'src/association/entity';
+import { Therapist } from 'src/therapist/entity';
 import { Repository } from 'typeorm';
-import { TherapistService } from './therapist.service';
+import { TherapistService } from './worfklow.service';
 
 // ------------------------------
 // Mock Factories for Repositories
@@ -25,7 +25,7 @@ const mockTherapistRepo = () => ({
     save: jest.fn(),
 });
 
-const mockPatientTherapistRepo = () => ({
+const mockAssociationRepo = () => ({
     save: jest.fn(),
     find: jest.fn(),
     findOne: jest.fn(),
@@ -54,7 +54,7 @@ const dummyTherapist: Therapist = {
     keycloakId: 'therapistKeycloakId',
 };
 
-const dummyPatientTherapist: PatientTherapist = {
+const dummyAssociation: Association = {
     id: 1,
     patient: dummyPatient,
     therapist: dummyTherapist,
@@ -66,7 +66,7 @@ describe('TherapistService', () => {
     let service: TherapistService;
     let patientRepo: jest.Mocked<Repository<Patient>>;
     let therapistRepo: jest.Mocked<Repository<Therapist>>;
-    let patientTherapistRepo: jest.Mocked<Repository<PatientTherapist>>;
+    let associationRepo: jest.Mocked<Repository<Association>>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -81,8 +81,8 @@ describe('TherapistService', () => {
                     useFactory: mockTherapistRepo,
                 },
                 {
-                    provide: getRepositoryToken(PatientTherapist),
-                    useFactory: mockPatientTherapistRepo,
+                    provide: getRepositoryToken(Association),
+                    useFactory: mockAssociationRepo,
                 },
             ],
         }).compile();
@@ -90,7 +90,7 @@ describe('TherapistService', () => {
         service = module.get<TherapistService>(TherapistService);
         patientRepo = module.get(getRepositoryToken(Patient));
         therapistRepo = module.get(getRepositoryToken(Therapist));
-        patientTherapistRepo = module.get(getRepositoryToken(PatientTherapist));
+        associationRepo = module.get(getRepositoryToken(Association));
 
         jest.clearAllMocks();
     });
@@ -107,7 +107,7 @@ describe('TherapistService', () => {
 
             therapistRepo.findOne.mockResolvedValue(therapist);
             patientRepo.save.mockResolvedValue(savedPatient);
-            patientTherapistRepo.save.mockResolvedValue({
+            associationRepo.save.mockResolvedValue({
                 id: 1,
                 therapist,
                 patient: savedPatient,
@@ -127,7 +127,7 @@ describe('TherapistService', () => {
             expect(patientRepo.save).toHaveBeenCalledWith(
                 expect.objectContaining({ isRegistered: false }),
             );
-            expect(patientTherapistRepo.save).toHaveBeenCalledWith(
+            expect(associationRepo.save).toHaveBeenCalledWith(
                 expect.objectContaining({
                     therapist,
                     patient: savedPatient,
@@ -155,11 +155,11 @@ describe('TherapistService', () => {
     // getPatient Tests
     // ========================================================
     describe('getPatient', () => {
-        it('should return patient and relation', async () => {
-            // Arrange: Simulate finding a patient and the relationship
+        it('should return patient and association', async () => {
+            // Arrange: Simulate finding a patient and the associationship
             patientRepo.findOne.mockResolvedValue(dummyPatient);
-            patientTherapistRepo.findOne.mockResolvedValue(
-                dummyPatientTherapist,
+            associationRepo.findOne.mockResolvedValue(
+                dummyAssociation,
             );
 
             // Act
@@ -172,7 +172,7 @@ describe('TherapistService', () => {
             expect(patientRepo.findOne).toHaveBeenCalledWith({
                 where: { id: dummyPatient.id },
             });
-            expect(patientTherapistRepo.findOne).toHaveBeenCalledWith({
+            expect(associationRepo.findOne).toHaveBeenCalledWith({
                 where: {
                     patient: { id: dummyPatient.id },
                     therapist: { keycloakId: dummyTherapist.keycloakId },
@@ -180,7 +180,7 @@ describe('TherapistService', () => {
             });
             expect(result).toEqual({
                 patient: dummyPatient,
-                patientTherapist: dummyPatientTherapist,
+                association: dummyAssociation,
             });
         });
 
@@ -194,10 +194,10 @@ describe('TherapistService', () => {
             ).rejects.toThrow(NotFoundException);
         });
 
-        it('should throw if relationship not found', async () => {
+        it('should throw if associationship not found', async () => {
             // Arrange
             patientRepo.findOne.mockResolvedValue(dummyPatient);
-            patientTherapistRepo.findOne.mockResolvedValue(null);
+            associationRepo.findOne.mockResolvedValue(null);
 
             // Act & Assert
             await expect(
@@ -217,15 +217,15 @@ describe('TherapistService', () => {
                 firstName: 'oldFirstName',
             };
             const updatedDTO = { ...dummyPatient, firstName: 'newFirstName' };
-            const patientTherapist = {
-                ...dummyPatientTherapist,
+            const association = {
+                ...dummyAssociation,
                 patient: originalPatient,
                 status: StatusType.WAITING,
             };
 
             jest.spyOn(service, 'getPatient').mockResolvedValue({
                 patient: originalPatient,
-                patientTherapist,
+                association,
             });
             patientRepo.save.mockResolvedValue({
                 ...originalPatient,
@@ -242,7 +242,7 @@ describe('TherapistService', () => {
 
             // Assert
             expect(result.firstName).toBe('newFirstName');
-            expect(patientTherapist.status).toBe(StatusType.ACTIVE);
+            expect(association.status).toBe(StatusType.ACTIVE);
             expect(service.getPatient).toHaveBeenCalledWith(
                 originalPatient.id,
                 dummyTherapist.keycloakId,
@@ -261,14 +261,14 @@ describe('TherapistService', () => {
                 ...dummyPatient,
                 isRegistered: false,
             };
-            const patientTherapist = {
-                ...dummyPatientTherapist,
+            const association = {
+                ...dummyAssociation,
                 patient: unregisteredPatient,
             };
 
             jest.spyOn(service, 'getPatient').mockResolvedValue({
                 patient: unregisteredPatient,
-                patientTherapist,
+                association,
             });
 
             // Act
@@ -278,24 +278,24 @@ describe('TherapistService', () => {
             );
 
             // Assert
-            expect(patientTherapistRepo.remove).toHaveBeenCalledWith(
-                patientTherapist,
+            expect(associationRepo.remove).toHaveBeenCalledWith(
+                association,
             );
             expect(patientRepo.remove).not.toHaveBeenCalled();
-            expect(result.message).toMatch(/relation removed/);
+            expect(result.message).toMatch(/association removed/);
         });
 
         it('should also remove patient if patient is registered', async () => {
             // Arrange: patient is registered
             const registeredPatient = { ...dummyPatient, isRegistered: true };
-            const patientTherapist = {
-                ...dummyPatientTherapist,
+            const association = {
+                ...dummyAssociation,
                 patient: registeredPatient,
             };
 
             jest.spyOn(service, 'getPatient').mockResolvedValue({
                 patient: registeredPatient,
-                patientTherapist,
+                association,
             });
 
             // Act
@@ -306,7 +306,7 @@ describe('TherapistService', () => {
 
             // Assert
             expect(patientRepo.remove).toHaveBeenCalledWith(registeredPatient);
-            expect(result.message).toMatch(/relation and patient removed/);
+            expect(result.message).toMatch(/association and patient removed/);
         });
     });
 
@@ -362,7 +362,7 @@ describe('TherapistService', () => {
 
             const therapist = { ...dummyTherapist };
 
-            patientTherapistRepo.find.mockResolvedValue([
+            associationRepo.find.mockResolvedValue([
                 {
                     id: 1,
                     patient: patient1,

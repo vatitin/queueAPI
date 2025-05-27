@@ -1,9 +1,9 @@
 import { IsDateString, IsEnum, IsOptional, IsUUID } from 'class-validator';
-import { Patient } from 'src/therapist/entity/Patient.entity';
-import { StatusType } from 'src/therapist/entity/PatientTherapist.entity';
-import { Therapist } from 'src/therapist/entity/Therapist.entity';
+import { Patient } from 'src/patient/entity';
+import { Therapist } from 'src/therapist/entity';
+import { StatusType } from './entity';
 
-export class PatientTherapistDTO {
+export class AssociationDTO {
     @IsUUID()
     patient: Patient;
 

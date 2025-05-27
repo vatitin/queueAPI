@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { GeoPointDto } from './GeoPointDTO.entity';
+import { GeoPointDto } from './create-geoPoint.dto';
 
 export class TherapistFormDTO {
     @IsString()

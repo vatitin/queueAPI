@@ -3,8 +3,9 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Point, Geometry } from 'geojson'; 
+import { Association } from 'src/association/entity';
 
 @Entity()
 export class Therapist {
@@ -51,4 +52,10 @@ export class Therapist {
   nullable: true,     
   })
   location: Point;
+
+  @OneToMany(
+  () => Association,
+      association => association.therapist,
+  )
+  associations: Association[];
 }
