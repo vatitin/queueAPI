@@ -29,5 +29,6 @@ export class TherapistFormDTO {
 
     @ValidateNested()
     @Type(() => GeoPointDto)
+    @IsNotEmpty()
     location: GeoPointDto;
 }

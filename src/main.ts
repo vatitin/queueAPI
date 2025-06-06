@@ -23,7 +23,7 @@ async function bootstrap() {
     //app.setGlobalPrefix('api');
 
     app.enableCors({
-        origin: ['http://localhost:5173', 'http://localhost:3174'], // todo adjust for production
+        origin: ['http://localhost:5173', 'http://localhost:5174'], // todo adjust for production
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         allowedHeaders: ['content-type', 'authorization'],
         credentials: true,

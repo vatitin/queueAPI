@@ -8,5 +8,7 @@ export class GeoPointDto {
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
+  //todo use object with lat and lng instead of array
   coordinates: [number, number];
+
 }

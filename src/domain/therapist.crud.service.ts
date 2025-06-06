@@ -1,13 +1,11 @@
 import {
-    BadRequestException,
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Therapist } from 'src/therapist/entity';
 import { Repository } from 'typeorm';
-import { TherapistFormDTO } from 'src/therapist/TherapistFormDTO.entity';
-import { TherapistDTO } from 'src/therapist/create.dto';
+import { TherapistResponseDTO } from 'src/therapist/therapist-response.dto';
 
 @Injectable()
 export class TherapistCRUDService {
@@ -36,17 +34,60 @@ export class TherapistCRUDService {
         }
         return therapist;
     }
+    
+    async getTherapistLocations(params: {
+        lng: number;
+        lat: number;
+        distance: number;
+    }): Promise<TherapistResponseDTO[]> {
+        const { lng, lat, distance } = params;
 
-    async findAllLocations(): Promise<
-        Array<{ id: string; latitude: number; longitude: number }>
-    > {
-    const rows = await this.therapistRepository.find({ select: ['id', 'location'] });
-    return rows
-      .filter((t) => Array.isArray(t.location?.coordinates))
-      .map((t) => ({
-        id: t.id,
-        longitude: t.location.coordinates[0],
-        latitude: t.location.coordinates[1],
-      }));
-  }
+        const distanceInMeters = distance * 1000;
+
+        // get id + Standort, if ST_DWithin true
+        const rawResults = await this.therapistRepository
+        .createQueryBuilder('therapist')
+        .select([
+            'therapist.id AS id',
+            'therapist.firstName AS firstName',
+            'therapist.lastName AS lastName',
+            'therapist.addressLine1 AS addressLine1',
+            'therapist.addressLine2 AS addressLine2',
+            'therapist.city AS city',
+            'therapist.postalCode AS postalCode',
+            'ST_X(therapist.location::geometry) AS longitude',
+            'ST_Y(therapist.location::geometry) AS latitude',
+        ])
+        .where(
+            `ST_DWithin(
+            therapist.location,
+            ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+            :distanceInMeters
+            )`,
+        )
+        .setParameters({ lng, lat, distanceInMeters })
+        .getRawMany<{ id: string; firstname: string, lastname: string, addressline1: string, addressline2: string, city: string, postalcode: string, longitude: number; latitude: number }>();
+
+        console.log("Raw results: ", rawResults.length);
+
+        return rawResults.map((r) => {
+            const therapistLocation : TherapistResponseDTO = {
+                id: r.id,
+                firstName: r.firstname,
+                lastName: r.lastname,
+                addressLine1: r.addressline1,
+                addressLine2: r.addressline2,
+                city: r.city,
+                postalCode: r.postalcode,
+                location:{
+                    type: 'Point',
+                    coordinates: [r.latitude, r.longitude],
+                }
+            }
+            console.log("therapistLocation: ", therapistLocation);
+            return therapistLocation;
+        }
+
+        );
+    }
 }

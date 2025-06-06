@@ -5,6 +5,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards,
     UsePipes,
     ValidationPipe,
@@ -18,16 +19,33 @@ import { AssociationService } from 'src/domain/association.service';
 import { StatusTypeValidationPipe } from 'src/therapist/statusType.validation.pipe';
 import { PatientDTO } from './create.dto';
 import { TherapistCRUDService } from 'src/domain/therapist.crud.service';
+import { GeoPointDto } from 'src/therapist/create-geoPoint.dto';
+import { LocationQueryDto } from './locationQuery.dto';
+import { TherapistLocationDto } from 'src/therapist/therapistLocation.dto';
+import { TherapistResponseDTO } from 'src/therapist/therapist-response.dto';
 
-@UseGuards(AuthGuard)
+//@UseGuards(AuthGuard)
 @Controller('patient')
 export class PatientController {
 
     constructor(private patientWorkflowService: PatientWorkflowService, private therapistCRUDService: TherapistCRUDService) {}
 
-    @Get('locations')
-      async getAllTherapistLocations() {
-      return this.patientWorkflowService.getAllTherapistLocations()
-    }
+
+  @Get('locations')
+  async getTherapistLocations(
+      @Query(new ValidationPipe({ transform: true, whitelist: true }))
+      query: LocationQueryDto
+  ): Promise<TherapistResponseDTO[]> {
+
+    const therapistLocations = await this.patientWorkflowService.getTherapistLocations({
+      lng: query.lng,
+      lat: query.lat,
+      distance: query.distance,
+      //categories,
+    });
+    console.log('Therapist Locations:', therapistLocations[0]?.location?.coordinates[0] ?? "nada");
+    return therapistLocations;
+  }
 
 }
+

@@ -55,10 +55,7 @@ export class TherapistWorkflowService {
             addressLine2: therapistFormDTO.addressLine2,
             city: therapistFormDTO.city,
             postalCode: therapistFormDTO.postalCode,
-            location: {
-                type: 'Point',
-                coordinates: [10.1234, 51.5678],
-            },
+            location: therapistFormDTO.location
         }
         const therapist = await this.therapistCRUDService.create(therapistDTO);
         return therapist;
@@ -130,7 +127,7 @@ export class TherapistWorkflowService {
     async removeNonRegisteredPatient(patientId: string, therapistKeycloakId: string) {
         const patient = await this.getPatientWithAssociation({patientId, therapistKeycloakId})
         if (patient.isRegistered) return;
-        
+
         await this.patientCRUDService.removePatient(patientId);
     }
 }

@@ -15,13 +15,15 @@ export class PatientWorkflowService {
 
     constructor(
 
-        private readonly associationService: AssociationService,  
-        private readonly patientCRUDService: PatientCRUDService,
         private readonly therapistCRUDService: TherapistCRUDService,  
 
     ) {}
 
-    getAllTherapistLocations() {
-        return this.therapistCRUDService.findAllLocations();
+    getTherapistLocations(params: {
+        lng: number;
+        lat: number;
+        distance: number;
+    }) {
+        return this.therapistCRUDService.getTherapistLocations(params);
     }
 }
