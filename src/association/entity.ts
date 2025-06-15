@@ -13,13 +13,15 @@ export class Association {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Patient, (patient) => patient.id, { 
-        nullable: false, onDelete: 'CASCADE', 
+    @ManyToOne(() => Patient, (patient) => patient.id, {
+        nullable: false,
+        onDelete: 'CASCADE',
     })
     patient: Patient;
 
     @ManyToOne(() => Therapist, (therapist) => therapist.id, {
-        nullable: false, onDelete: 'CASCADE', 
+        nullable: false,
+        onDelete: 'CASCADE',
     })
     therapist: Therapist;
 

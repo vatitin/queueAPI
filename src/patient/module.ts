@@ -1,17 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from 'src/auth/module';
-import { Patient } from './entity';
+import { AuthGuard } from 'nest-keycloak-connect';
 import { Association } from 'src/association/entity';
-import { Therapist } from 'src/therapist/entity';
-import { PatientController } from './controller';
-import { PatientCRUDService } from '../domain/patient.crud.service';
-import { PatientWorkflowService } from './workflow.service';
-import { TherapistModule } from 'src/therapist/module';
 import { AssociationModule } from 'src/association/module';
+import { AuthModule } from 'src/auth/module';
 import { DomainModule } from 'src/domain/module';
 import { PatientAuthGuard } from 'src/patient/patient-auth.guard';
-import { AuthGuard } from 'nest-keycloak-connect';
+import { Therapist } from 'src/therapist/entity';
+import { PatientCRUDService } from '../domain/patient.crud.service';
+import { PatientController } from './controller';
+import { Patient } from './entity';
+import { PatientWorkflowService } from './workflow.service';
 
 @Module({
     imports: [
@@ -21,7 +20,12 @@ import { AuthGuard } from 'nest-keycloak-connect';
         DomainModule,
     ],
     controllers: [PatientController],
-    providers: [PatientWorkflowService, PatientCRUDService, AuthGuard, PatientAuthGuard],
-    exports: [PatientCRUDService],  
+    providers: [
+        PatientWorkflowService,
+        PatientCRUDService,
+        AuthGuard,
+        PatientAuthGuard,
+    ],
+    exports: [PatientCRUDService],
 })
 export class PatientModule {}

@@ -1,11 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Association, StatusType } from 'src/association/entity';
 import { GenderType, Patient } from 'src/patient/entity';
-import {
-    Association,
-    StatusType,
-} from 'src/association/entity';
 import { Therapist } from 'src/therapist/entity';
 import { Repository } from 'typeorm';
 import { TherapistService } from './worfklow.service';
@@ -158,9 +155,7 @@ describe('TherapistService', () => {
         it('should return patient and association', async () => {
             // Arrange: Simulate finding a patient and the associationship
             patientRepo.findOne.mockResolvedValue(dummyPatient);
-            associationRepo.findOne.mockResolvedValue(
-                dummyAssociation,
-            );
+            associationRepo.findOne.mockResolvedValue(dummyAssociation);
 
             // Act
             const result = await service.getPatient(
@@ -278,9 +273,7 @@ describe('TherapistService', () => {
             );
 
             // Assert
-            expect(associationRepo.remove).toHaveBeenCalledWith(
-                association,
-            );
+            expect(associationRepo.remove).toHaveBeenCalledWith(association);
             expect(patientRepo.remove).not.toHaveBeenCalled();
             expect(result.message).toMatch(/association removed/);
         });

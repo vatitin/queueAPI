@@ -1,24 +1,24 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from 'src/auth/module';
-import { TherapistController } from './controller';
-import { Patient } from '../patient/entity';
 import { Association } from 'src/association/entity';
-import { Therapist } from './entity';
 import { AssociationModule } from 'src/association/module';
-import { TherapistCRUDService } from '../domain/therapist.crud.service';
-import { TherapistWorkflowService } from './worfklow.service';
+import { AuthModule } from 'src/auth/module';
 import { DomainModule } from 'src/domain/module';
+import { TherapistCRUDService } from '../domain/therapist.crud.service';
+import { Patient } from '../patient/entity';
+import { TherapistController } from './controller';
+import { Therapist } from './entity';
+import { TherapistWorkflowService } from './worfklow.service';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Patient, Therapist, Association]),
         DomainModule,
         AuthModule,
-        AssociationModule
+        AssociationModule,
     ],
     controllers: [TherapistController],
     providers: [TherapistCRUDService, TherapistWorkflowService],
-    exports: [TherapistCRUDService]
+    exports: [TherapistCRUDService],
 })
 export class TherapistModule {}

@@ -1,14 +1,19 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsLatitude, IsLongitude, IsNumber } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsIn,
+    IsNumber,
+} from 'class-validator';
 
 export class GeoPointDto {
-  @IsIn(['Point'])
-  type: 'Point';
+    @IsIn(['Point'])
+    type: 'Point';
 
-  @IsArray()
-  @ArrayMinSize(2)
-  @ArrayMaxSize(2)
-  @IsNumber({}, { each: true })
-  //todo use object with lat and lng instead of array
-  coordinates: [number, number];
-
+    @IsArray()
+    @ArrayMinSize(2)
+    @ArrayMaxSize(2)
+    @IsNumber({}, { each: true })
+    //todo use object with lat and lng instead of array
+    coordinates: [number, number];
 }

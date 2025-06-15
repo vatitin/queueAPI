@@ -1,16 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Patient } from 'src/patient/entity';
 import { Association } from 'src/association/entity';
+import { DomainModule } from 'src/domain/module';
+import { Patient } from 'src/patient/entity';
 import { Therapist } from 'src/therapist/entity';
 import { AssociationService } from '../domain/association.service';
-import { PatientModule } from 'src/patient/module';
-import { DomainModule } from 'src/domain/module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Patient, Therapist, Association]),
-        DomainModule
+        DomainModule,
     ],
     providers: [AssociationService],
     exports: [AssociationService],

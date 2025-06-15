@@ -1,5 +1,10 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    ValidateNested,
+} from 'class-validator';
 import { GeoPointDto } from './create-geoPoint.dto';
 
 export class TherapistFormDTO {
@@ -18,7 +23,7 @@ export class TherapistFormDTO {
     @IsString()
     @IsOptional()
     addressLine2: string;
-    
+
     @IsString()
     @IsNotEmpty()
     city: string;

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthGuard } from 'nest-keycloak-connect';
-import { GenderType } from 'src/patient/entity';
 import { StatusType } from 'src/association/entity';
+import { GenderType } from 'src/patient/entity';
 import { TherapistController } from './controller';
 import { TherapistService } from './worfklow.service';
 

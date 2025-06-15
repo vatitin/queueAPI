@@ -1,8 +1,7 @@
-import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { GenderType } from 'src/patient/entity';
 
 export class PatientFormDTO {
-
     @IsString()
     firstName: string;
 

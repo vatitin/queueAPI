@@ -1,9 +1,7 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { GenderType } from 'src/patient/entity';
+import { IsOptional, IsString } from 'class-validator';
 import { PatientFormDTO } from './create-form.dto';
 
-export class LocalPatientDTO extends PatientFormDTO{
-
+export class LocalPatientDTO extends PatientFormDTO {
     @IsOptional()
     @IsString()
     email: string;

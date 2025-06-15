@@ -30,9 +30,6 @@ export class Patient {
     @Column({ length: 32, nullable: true })
     gender: GenderType;
 
-    @OneToMany(
-    () => Association,
-        association => association.patient,
-    )
+    @OneToMany(() => Association, (association) => association.patient)
     associations: Association[];
 }

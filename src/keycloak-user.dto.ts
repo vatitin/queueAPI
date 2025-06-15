@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class KeycloakUserDTO {
     @IsNotEmpty()
@@ -7,5 +7,5 @@ export class KeycloakUserDTO {
 
     @IsNotEmpty()
     @IsString()
-    email: string;  
+    email: string;
 }

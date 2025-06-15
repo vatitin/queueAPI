@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import {
     KeycloakConnectModule,
     PolicyEnforcementMode,
     TokenValidation,
 } from 'nest-keycloak-connect';
-import { Patient } from 'src/patient/entity';
 
 @Module({
     imports: [

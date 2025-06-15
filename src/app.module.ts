@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/module';
-import { Patient } from './patient/entity';
 import { Association } from './association/entity';
+import { AssociationModule } from './association/module';
+import { AuthModule } from './auth/module';
+import { DomainModule } from './domain/module';
+import { Patient } from './patient/entity';
+import { PatientModule } from './patient/module';
 import { Therapist } from './therapist/entity';
 import { TherapistModule } from './therapist/module';
-import { PatientModule } from './patient/module';
-import { AssociationModule } from './association/module';
-import { DomainModule } from './domain/module';
 
 @Module({
     imports: [
