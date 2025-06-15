@@ -25,9 +25,19 @@ export class TherapistCRUDService {
         return true;
     }
     
-    async findTherapist(keycloakId: string) {
+    async getTherapistByKeycloakId(keycloakId: string) {
         let therapist = await this.therapistRepository.findOne({
             where: { keycloakId },
+        });
+        if (!therapist) {
+            throw new NotFoundException('Therapist not found');
+        }
+        return therapist;
+    }
+
+    async getTherapistById(id: string) {
+        let therapist = await this.therapistRepository.findOne({
+            where: { id },
         });
         if (!therapist) {
             throw new NotFoundException('Therapist not found');

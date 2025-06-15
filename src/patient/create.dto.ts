@@ -1,28 +1,13 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
 import { GenderType } from 'src/patient/entity';
+import { PatientFormDTO } from './create-form.dto';
 
-export class PatientDTO {
+export class PatientDTO extends PatientFormDTO {
+
+    @IsUUID()
+    keycloakId: string;
+
     @IsString()
-    @IsOptional()
     email: string;
 
-    @IsBoolean()
-    @IsOptional()
-    isRegistered: boolean;
-
-    @IsString()
-    @IsOptional()
-    firstName: string;
-
-    @IsString()
-    @IsOptional()
-    lastName: string;
-
-    @IsString()
-    @IsOptional()
-    phoneNumber: string;
-
-    @IsString()
-    @IsOptional()
-    gender: GenderType;
 }

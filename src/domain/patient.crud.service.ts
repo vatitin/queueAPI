@@ -1,4 +1,5 @@
 import {
+    ConflictException,
     HttpStatus,
     Injectable,
     NotFoundException,
@@ -6,7 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from 'src/patient/entity';
 import { Repository } from 'typeorm';
-import { PatientDTO } from '../patient/create.dto';
+import { LocalPatientDTO } from '../patient/create-local.dto';
+import { PatientDTO } from 'src/patient/create.dto';
 
 @Injectable()
 export class PatientCRUDService {
@@ -16,6 +18,21 @@ export class PatientCRUDService {
     private readonly patientRepository: Repository<Patient>,
 
 ) {}
+
+    async createPatient(patientDTO: PatientDTO) {
+        const exists = await this.patientRepository.findOneBy({ keycloakId: patientDTO.keycloakId });
+        if (exists) {
+            throw new ConflictException('Patient mit dieser Keycloak-ID existiert bereits');
+        }
+
+        const patient = await this.patientRepository.save(patientDTO);
+        return patient;
+    }
+
+    async existsByKeycloakId(sub: string) {
+        const patient = await this.patientRepository.findOneBy({ keycloakId: sub });
+        return !!patient;
+    }
 
     async removePatient(patientId: string) {
         const patient = await this.getPatient(patientId);
@@ -35,26 +52,32 @@ export class PatientCRUDService {
         return patient;
     }
 
-    async createPatient(
-        patientDTO: PatientDTO,
-    ) {
-        patientDTO.isRegistered = false;
-        const patient = await this.patientRepository.save(patientDTO);
+    async getPatientByKeycloakId(keycloakId: string) {
+        const patient = await this.patientRepository.findOneBy({
+            keycloakId 
+        });
+        if (!patient) throw new NotFoundException('Patient could not be found');
 
         return patient;
     }
 
-    async updatePatient(
+    async createLocalPatient(
+        localPatientDTO: LocalPatientDTO,
+    ) {
+        const patient = await this.patientRepository.save(localPatientDTO);
+        return patient;
+    }
+
+    async updateLocalPatient(
         id: string,
-        patientDTO: PatientDTO,
+        localPatientDTO: LocalPatientDTO,
     ) {
         const patient = await this.getPatient(id);
 
-        if (patientDTO.firstName) patient.firstName = patientDTO.firstName;
-        if (patientDTO.lastName) patient.lastName = patientDTO.lastName;
-        if (patientDTO.email) patient.email = patientDTO.email;
-        if (patientDTO.phoneNumber)
-            patient.phoneNumber = patientDTO.phoneNumber;
+        if (localPatientDTO.firstName) patient.firstName = localPatientDTO.firstName;
+        if (localPatientDTO.lastName) patient.lastName = localPatientDTO.lastName;
+        if (localPatientDTO.email) patient.email = localPatientDTO.email;
+        if (localPatientDTO.phoneNumber) patient.phoneNumber = localPatientDTO.phoneNumber;
 
         return await this.patientRepository.save(patient);
     }

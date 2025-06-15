@@ -17,8 +17,9 @@ import { TherapistFormDTO } from './TherapistFormDTO.entity';
 import { AssociationService } from 'src/domain/association.service';
 import { StatusTypeValidationPipe } from './statusType.validation.pipe';
 import { StatusType } from 'src/association/entity';
-import { PatientDTO } from 'src/patient/create.dto';
+import { LocalPatientDTO } from 'src/patient/create-local.dto';
 import { Patient } from 'src/patient/entity';
+import { KeycloakUserDTO } from 'src/keycloak-user.dto';
 
 @UseGuards(AuthGuard)
 @Controller('therapist')
@@ -27,18 +28,18 @@ export class TherapistController {
     constructor(private therapistWorkflowService: TherapistWorkflowService, private associationService: AssociationService) {}
 
     @Get('myProfile')
-    async getProfile(@AuthenticatedUser() therapist: KeycloakUser) {
+    async getProfile(@AuthenticatedUser() therapist: KeycloakUserDTO) {
         return await this.therapistWorkflowService.getProfile(therapist);
     }
 
 
     @Get('hasLocalTherapist')
-    async hasLocalTherapist(@AuthenticatedUser() therapist: KeycloakUser) {
+    async hasLocalTherapist(@AuthenticatedUser() therapist: KeycloakUserDTO) {
         return await this.therapistWorkflowService.hasLocalTherapist(therapist);
     }
 
     @Post('createTherapist')
-    async createTherapist(@AuthenticatedUser() therapist: KeycloakUser, @Body() therapistForm: TherapistFormDTO) {
+    async createTherapist(@AuthenticatedUser() therapist: KeycloakUserDTO, @Body() therapistForm: TherapistFormDTO) {
         return await this.therapistWorkflowService.createTherapist(therapist, therapistForm);
     }
 
@@ -46,8 +47,8 @@ export class TherapistController {
     @UsePipes(ValidationPipe)
     async createPatient(
         @Param('status', new StatusTypeValidationPipe()) status: StatusType,
-        @AuthenticatedUser() user: KeycloakUser,
-        @Body() patientDTO: PatientDTO,
+        @AuthenticatedUser() user: KeycloakUserDTO,
+        @Body() patientDTO: LocalPatientDTO,
     ) {
         await this.therapistWorkflowService.addPatientToTherapist(patientDTO, user.sub, status);
     }
@@ -55,7 +56,7 @@ export class TherapistController {
     @Get('getPatientsByStatus/:status')
     async getPatientsFromTherapist(
         @Param('status', new StatusTypeValidationPipe()) status: StatusType,
-        @AuthenticatedUser() user: KeycloakUser,
+        @AuthenticatedUser() user: KeycloakUserDTO,
     ): Promise<Patient[]> {
         const patients = await this.therapistWorkflowService.getPatientsFromTherapist(
             user.sub,
@@ -67,7 +68,7 @@ export class TherapistController {
     @Get('getPatientById/:id')
     async getPatient(
         @Param('id') id: string,
-        @AuthenticatedUser() user: KeycloakUser,
+        @AuthenticatedUser() user: KeycloakUserDTO,
     ): Promise<Patient> {
         const patient = await this.therapistWorkflowService.getPatientWithAssociation({patientId: id, therapistKeycloakId: user.sub});
         return patient;
@@ -79,16 +80,16 @@ export class TherapistController {
         @Param('id') patientId: string,
         @Param('status', new StatusTypeValidationPipe(false))
         status: StatusType,
-        @Body() patientDTO: PatientDTO,
-        @AuthenticatedUser() user: KeycloakUser,
+        @Body() localPatientDTO: LocalPatientDTO,
+        @AuthenticatedUser() user: KeycloakUserDTO,
     ) {
-        await this.therapistWorkflowService.updateNonRegisteredPatient({patientId, patientDTO, therapistKeycloakId: user.sub, status});
+        await this.therapistWorkflowService.updateNonRegisteredPatient({patientId, localPatientDTO, therapistKeycloakId: user.sub, status});
     }
 
     @Delete('removePatient/:id')
     async removePatient(
         @Param('id') patientId: string,
-        @AuthenticatedUser() user: KeycloakUser,
+        @AuthenticatedUser() user: KeycloakUserDTO,
     ) {
         await this.therapistWorkflowService.removeNonRegisteredPatient(patientId, user.sub)
     }

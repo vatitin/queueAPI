@@ -9,10 +9,11 @@ import { Repository } from 'typeorm';
 import { TherapistFormDTO } from 'src/therapist/TherapistFormDTO.entity';
 import { TherapistDTO } from 'src/therapist/create.dto';
 import { TherapistCRUDService } from '../domain/therapist.crud.service';
-import { PatientDTO } from 'src/patient/create.dto';
+import { LocalPatientDTO } from 'src/patient/create-local.dto';
 import { PatientCRUDService } from 'src/domain/patient.crud.service';
 import { AssociationService } from 'src/domain/association.service';
 import { Association, StatusType } from 'src/association/entity';
+import { KeycloakUserDTO } from 'src/keycloak-user.dto';
 
 @Injectable()
 export class TherapistWorkflowService {
@@ -27,7 +28,7 @@ export class TherapistWorkflowService {
 
     ) {}
 
-    async hasLocalTherapist(keycloakUser: KeycloakUser) {
+    async hasLocalTherapist(keycloakUser: KeycloakUserDTO) {
         const { sub } = keycloakUser;
         const therapist = await this.therapistRepository.findOne({
             where: { keycloakId: sub },
@@ -38,7 +39,7 @@ export class TherapistWorkflowService {
     }
 
     async createTherapist(
-        keycloakUser: KeycloakUser,
+        keycloakUser: KeycloakUserDTO,
         therapistFormDTO: TherapistFormDTO,
     ) {
         if(await this.hasLocalTherapist(keycloakUser)) {
@@ -46,9 +47,10 @@ export class TherapistWorkflowService {
                 'Therapist already exists for this user',
             );
         }
-        const { sub } = keycloakUser;
+        const { sub, email } = keycloakUser;
         const therapistDTO: TherapistDTO = {
             keycloakId: sub,
+            email,
             firstName: therapistFormDTO.firstName,
             lastName: therapistFormDTO.lastName,
             addressLine1: therapistFormDTO.addressLine1,
@@ -61,19 +63,20 @@ export class TherapistWorkflowService {
         return therapist;
     }
 
-    async getProfile(keycloakUser: KeycloakUser) {
+    async getProfile(keycloakUser: KeycloakUserDTO) {
         if (!keycloakUser)
             throw new BadRequestException('Therapist could not be found');
         //todo not working yet
-        const { family_name, given_name, email } = keycloakUser;
-        const profile = { family_name, given_name, email };
+        const { email } = keycloakUser;
+        const profile = { email };
         return profile;
     }
 
-    async addPatientToTherapist(patientDTO: PatientDTO, therapistKeycloakId: string, status: StatusType) {
-        const patient = await this.patientCRUDService.createPatient(patientDTO);
-        const therapist = await this.therapistCRUDService.findTherapist(therapistKeycloakId);
-        await this.associationService.createAssociation(therapist, patient, status);
+    async addPatientToTherapist(localPatientDTO: LocalPatientDTO, therapistKeycloakId: string, status: StatusType) {
+        const patient = await this.patientCRUDService.createLocalPatient(localPatientDTO);
+        const therapist = await this.therapistCRUDService.getTherapistByKeycloakId(therapistKeycloakId);
+        const association = await this.associationService.createAssociation(therapist, patient, status);
+        console.log("createAssciation ", association)
 
         return patient;
     }
@@ -94,7 +97,7 @@ export class TherapistWorkflowService {
 
     async getPatientWithAssociation({patientId, therapistKeycloakId} : {patientId: string, therapistKeycloakId: string}) {
         const patient = await this.patientCRUDService.getPatient(patientId);
-        const therapist = await this.therapistCRUDService.findTherapist(therapistKeycloakId);
+        const therapist = await this.therapistCRUDService.getTherapistByKeycloakId(therapistKeycloakId);
         await this.associationService.findAssociation({patientId, therapistId: therapist.id});
 
         return patient;
@@ -102,31 +105,31 @@ export class TherapistWorkflowService {
 
     async updateNonRegisteredPatient({
         patientId,
-        patientDTO,
+        localPatientDTO,
         therapistKeycloakId,
         status,
     }: {
         patientId: string;
-        patientDTO: PatientDTO;
+        localPatientDTO: LocalPatientDTO;
         therapistKeycloakId: string;
         status: StatusType;
     }) {
         const patient = await this.patientCRUDService.getPatient(patientId);
-        if (patient.isRegistered) return; //todo return error
+        if (patient.keycloakId) return; //todo return error
 
-        const therapist = await this.therapistCRUDService.findTherapist(therapistKeycloakId);
+        const therapist = await this.therapistCRUDService.getTherapistByKeycloakId(therapistKeycloakId);
         const association = await this.associationService.findAssociation({patientId, therapistId: therapist.id});
 
-        await this.patientCRUDService.updatePatient(
+        await this.patientCRUDService.updateLocalPatient(
             patientId,
-            patientDTO,
+            localPatientDTO,
         );
         await this.associationService.updateAssociation(association, { status });
     }
 
     async removeNonRegisteredPatient(patientId: string, therapistKeycloakId: string) {
         const patient = await this.getPatientWithAssociation({patientId, therapistKeycloakId})
-        if (patient.isRegistered) return;
+        if (patient.keycloakId) return;
 
         await this.patientCRUDService.removePatient(patientId);
     }

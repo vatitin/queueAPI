@@ -8,14 +8,18 @@ export class Patient {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
-    isRegistered: boolean;
+    @Column({
+        type: 'uuid',
+        unique: true,
+        nullable: true,
+    })
+    keycloakId?: string;
 
     @Column({ length: 32, nullable: true })
     email: string;
 
     @Column({ length: 32, nullable: true })
-    firstName?: string;
+    firstName: string;
 
     @Column({ length: 32, nullable: true })
     lastName: string;

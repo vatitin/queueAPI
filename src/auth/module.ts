@@ -5,6 +5,7 @@ import {
     PolicyEnforcementMode,
     TokenValidation,
 } from 'nest-keycloak-connect';
+import { Patient } from 'src/patient/entity';
 
 @Module({
     imports: [

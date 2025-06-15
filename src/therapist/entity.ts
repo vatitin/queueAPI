@@ -1,4 +1,5 @@
 import {
+  IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -12,37 +13,54 @@ export class Therapist {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
+  @Column({
+    type: 'uuid',  
+    unique: true, 
+    nullable: false,
+  })
   keycloakId: string;
 
-  @Column({ length: 32 })
-  @IsString()
-  @IsNotEmpty()
+  @Column({
+    type: 'varchar',           
+    unique: true,       
+    nullable: false,
+  })
+  email: string;
+
+  @Column({
+     length: 32, 
+     nullable: true,
+  })
   firstName: string;
 
-  @Column({ length: 32 })
-  @IsString()
-  @IsNotEmpty()
+  @Column({
+     length: 32, 
+     nullable: true,
+  })
   lastName: string;
 
-  @Column({ length: 32 })
-  @IsString()
-  @IsNotEmpty()
+  @Column({
+     length: 32, 
+     nullable: true,
+  })
   addressLine1: string;
 
-  @Column({ length: 32, nullable: true })
-  @IsString()
-  @IsOptional()
+  @Column({
+     length: 32, 
+     nullable: true,
+  })
   addressLine2?: string;
 
-  @Column({ length: 32 })
-  @IsString()
-  @IsNotEmpty()
+  @Column({
+     length: 32, 
+     nullable: true,
+  })
   city: string;
 
-  @Column({ length: 32 })
-  @IsString()
-  @IsNotEmpty()
+  @Column({
+     length: 32, 
+     nullable: true,
+  })
   postalCode: string;
 
   @Column({

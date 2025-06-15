@@ -10,16 +10,18 @@ import { PatientWorkflowService } from './workflow.service';
 import { TherapistModule } from 'src/therapist/module';
 import { AssociationModule } from 'src/association/module';
 import { DomainModule } from 'src/domain/module';
+import { PatientAuthGuard } from 'src/patient/patient-auth.guard';
+import { AuthGuard } from 'nest-keycloak-connect';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Patient, Therapist, Association]),
         AuthModule,
         AssociationModule,
-        DomainModule
+        DomainModule,
     ],
     controllers: [PatientController],
-    providers: [PatientWorkflowService, PatientCRUDService],
+    providers: [PatientWorkflowService, PatientCRUDService, AuthGuard, PatientAuthGuard],
     exports: [PatientCRUDService],  
 })
 export class PatientModule {}

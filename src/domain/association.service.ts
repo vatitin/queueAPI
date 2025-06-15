@@ -19,6 +19,7 @@ export class AssociationService {
         this.associationRepository.save(association);
     }
 
+    //todo use ids instead of full objects
     async createAssociation(therapist: Therapist, patient: Patient, status: StatusType) {
         const associationDTO: AssociationDTO = {
             therapist: therapist,
