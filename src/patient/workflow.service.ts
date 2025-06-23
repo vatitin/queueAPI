@@ -6,6 +6,7 @@ import { TherapistCRUDService } from 'src/domain/therapist.crud.service';
 import { KeycloakUserDTO } from 'src/keycloak-user.dto';
 import { PatientFormDTO } from './create-form.dto';
 import { PatientDTO } from './create.dto';
+import { AssociationDTO } from 'src/association/create.dto';
 
 @Injectable()
 export class PatientWorkflowService {
@@ -37,22 +38,31 @@ export class PatientWorkflowService {
         return await this.therapistCRUDService.getTherapistById(therapistId);
     }
 
-    async applyToTherapist(keycloakUser: KeycloakUserDTO, therapistId: string) {
-        const therapist =
-            await this.therapistCRUDService.getTherapistById(therapistId);
-        const patient = await this.patientCRUDService.getPatientByKeycloakId(
+    async getProfile(keycloakUser: KeycloakUserDTO) {
+        return await this.patientCRUDService.getPatientByKeycloakId(
             keycloakUser.sub,
         );
+    }
+
+    async applyToTherapist(keycloakUser: KeycloakUserDTO, therapistId: string, applicationText: string) {
+        const therapist = await this.therapistCRUDService.getTherapistById(therapistId);
+        const patient = await this.patientCRUDService.getPatientByKeycloakId(keycloakUser.sub);
+
         console.log(
             'Applying to therapist',
             therapist,
             patient,
             StatusType.WAITING,
         );
-        return this.associationService.createAssociation(
+
+        const association: AssociationDTO = {
             therapist,
             patient,
-            StatusType.WAITING,
+            status: StatusType.WAITING,
+            applicationText
+        }
+        return this.associationService.createAssociation(
+            association
         );
     }
 

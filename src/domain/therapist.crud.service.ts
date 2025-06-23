@@ -11,10 +11,6 @@ export class TherapistCRUDService {
         private readonly therapistRepository: Repository<Therapist>,
     ) {}
 
-    create(dto: Partial<Therapist>): Promise<Therapist> {
-        return this.therapistRepository.save(dto);
-    }
-
     async existsByKeycloakId(keycloakId: string): Promise<boolean> {
         const therapist = await this.therapistRepository.findOne({
             where: { keycloakId },
@@ -99,7 +95,7 @@ export class TherapistCRUDService {
                 postalCode: r.postalcode,
                 location: {
                     type: 'Point',
-                    coordinates: [r.latitude, r.longitude],
+                    coordinates: [r.longitude, r.latitude],
                 },
             };
             console.log('therapistLocation: ', therapistLocation);

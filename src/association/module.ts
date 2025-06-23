@@ -9,7 +9,6 @@ import { AssociationService } from '../domain/association.service';
 @Module({
     imports: [
         TypeOrmModule.forFeature([Patient, Therapist, Association]),
-        DomainModule,
     ],
     providers: [AssociationService],
     exports: [AssociationService],

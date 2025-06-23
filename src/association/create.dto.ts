@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Patient } from 'src/patient/entity';
 import { Therapist } from 'src/therapist/entity';
 import { StatusType } from './entity';
@@ -12,6 +12,12 @@ export class AssociationDTO {
 
     @IsEnum(StatusType)
     status: StatusType;
+
+    @IsString()
+    applicationText?: string;
+
+    @IsString()
+    comment?: string;
 
     @IsOptional()
     @IsDateString()

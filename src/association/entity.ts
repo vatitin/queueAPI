@@ -13,6 +13,21 @@ export class Association {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column({
+        type: 'timestamp',
+        nullable: true,
+    })
+    lastStatusChange: Date;
+
+    @Column({ type: 'enum', enum: StatusType, default: 'waiting' })
+    status: StatusType;
+
+    @Column({ type: 'text', nullable: true})
+    applicationText?: string;
+
+    @Column({ type: 'text', nullable: true})
+    comment?: string;
+
     @ManyToOne(() => Patient, (patient) => patient.id, {
         nullable: false,
         onDelete: 'CASCADE',
@@ -22,15 +37,7 @@ export class Association {
     @ManyToOne(() => Therapist, (therapist) => therapist.id, {
         nullable: false,
         onDelete: 'CASCADE',
+        orphanedRowAction: 'delete',
     })
     therapist: Therapist;
-
-    @Column({
-        type: 'timestamp',
-        nullable: true,
-    })
-    lastStatusChange: Date;
-
-    @Column({ type: 'enum', enum: StatusType, default: 'waiting' })
-    status: StatusType;
 }

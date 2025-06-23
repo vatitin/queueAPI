@@ -7,8 +7,14 @@ export class LocalPatientDTO extends PatientFormDTO {
     email: string;
 
     @IsOptional()
+    @IsString()
     firstName: string;
 
     @IsOptional()
+    @IsString()
     lastName: string;
+
+    @IsString()
+    @IsOptional()
+    comment: string;
 }

@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 
 import { AuthenticatedUser, AuthGuard } from 'nest-keycloak-connect';
-import { StatusType } from 'src/association/entity';
+import { Association, StatusType } from 'src/association/entity';
 import { AssociationService } from 'src/domain/association.service';
 import { KeycloakUserDTO } from 'src/keycloak-user.dto';
 import { LocalPatientDTO } from 'src/patient/create-local.dto';
@@ -55,7 +55,7 @@ export class TherapistController {
     async createPatient(
         @Param('status', new StatusTypeValidationPipe()) status: StatusType,
         @AuthenticatedUser() user: KeycloakUserDTO,
-        @Body() patientDTO: LocalPatientDTO,
+        @Body() patientDTO: LocalPatientDTO
     ) {
         await this.therapistWorkflowService.addPatientToTherapist(
             patientDTO,
@@ -68,7 +68,7 @@ export class TherapistController {
     async getPatientsFromTherapist(
         @Param('status', new StatusTypeValidationPipe()) status: StatusType,
         @AuthenticatedUser() user: KeycloakUserDTO,
-    ): Promise<Patient[]> {
+    ): Promise<Association[]> {
         const patients =
             await this.therapistWorkflowService.getPatientsFromTherapist(
                 user.sub,
@@ -112,6 +112,7 @@ export class TherapistController {
         @Param('id') patientId: string,
         @AuthenticatedUser() user: KeycloakUserDTO,
     ) {
+        console.log('removePatient');
         await this.therapistWorkflowService.removeNonRegisteredPatient(
             patientId,
             user.sub,

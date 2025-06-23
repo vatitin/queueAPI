@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     HttpStatus,
     Injectable,
@@ -9,12 +10,15 @@ import { PatientDTO } from 'src/patient/create.dto';
 import { Patient } from 'src/patient/entity';
 import { Repository } from 'typeorm';
 import { LocalPatientDTO } from '../patient/create-local.dto';
+import { AssociationService } from './association.service';
+import { Association } from 'src/association/entity';
 
 @Injectable()
 export class PatientCRUDService {
     constructor(
         @InjectRepository(Patient)
         private readonly patientRepository: Repository<Patient>,
+        private readonly associationService: AssociationService,
     ) {}
 
     async createPatient(patientDTO: PatientDTO) {
@@ -35,16 +39,8 @@ export class PatientCRUDService {
         const patient = await this.patientRepository.findOneBy({
             keycloakId: sub,
         });
+        console.log("has Patient", !!patient)
         return !!patient;
-    }
-
-    async removePatient(patientId: string) {
-        const patient = await this.getPatient(patientId);
-        await this.patientRepository.remove(patient);
-        return {
-            status: HttpStatus.OK,
-            message: 'Non registered patient removed successfully',
-        };
     }
 
     async getPatient(id: string) {

@@ -45,16 +45,28 @@ export class PatientController {
     async applyToTherapist(
         @AuthenticatedUser() keycloakUser: KeycloakUserDTO,
         @Param('therapistId') therapistId: string,
+        @Body() body: { applicationText: string },
     ) {
+      console.log("applyToTherapist controller")
         return await this.patientWorkflowService.applyToTherapist(
             keycloakUser,
             therapistId,
+            body.applicationText
         );
+    }
+
+    @Get('getProfile')
+    @UseGuards(PatientAuthGuard) 
+    async getProfile(
+      @AuthenticatedUser() keycloakUser: KeycloakUserDTO
+    ) {
+      return await this.patientWorkflowService.getProfile(keycloakUser)
     }
 
     @Get('hasLocalPatient')
     @UseGuards(AuthGuard)
     async hasLocalPatient(@AuthenticatedUser() keycloakUser: KeycloakUserDTO) {
+      console.log("hasLocalPatient")
         return await this.patientWorkflowService.hasLocalPatient(keycloakUser);
     }
 

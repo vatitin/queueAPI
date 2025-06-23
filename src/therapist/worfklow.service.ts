@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Association, StatusType } from 'src/association/entity';
 import { AssociationService } from 'src/domain/association.service';
@@ -10,12 +10,16 @@ import { TherapistDTO } from 'src/therapist/create.dto';
 import { Therapist } from 'src/therapist/entity';
 import { Repository } from 'typeorm';
 import { TherapistCRUDService } from '../domain/therapist.crud.service';
+import { AssociationDTO } from 'src/association/create.dto';
+import { Patient } from 'src/patient/entity';
 
 @Injectable()
 export class TherapistWorkflowService {
     constructor(
         @InjectRepository(Therapist)
         private readonly therapistRepository: Repository<Therapist>,
+        @InjectRepository(Patient)
+        private readonly patientRepository: Repository<Patient>,
 
         private readonly therapistCRUDService: TherapistCRUDService,
         private readonly patientCRUDService: PatientCRUDService,
@@ -53,16 +57,21 @@ export class TherapistWorkflowService {
             postalCode: therapistFormDTO.postalCode,
             location: therapistFormDTO.location,
         };
-        const therapist = await this.therapistCRUDService.create(therapistDTO);
+        const therapist = this.therapistRepository.create(therapistDTO);
         return therapist;
     }
 
     async getProfile(keycloakUser: KeycloakUserDTO) {
-        if (!keycloakUser)
-            throw new BadRequestException('Therapist could not be found');
-        //todo not working yet
-        const { email } = keycloakUser;
-        const profile = { email };
+
+        const therapist = await this.therapistCRUDService.getTherapistByKeycloakId(keycloakUser.sub);
+        if (!therapist) throw new BadRequestException('Therapist could not be found');
+
+        const profile = { 
+            email: keycloakUser.email,
+            firstName: therapist.firstName,
+            lastName: therapist.lastName, 
+        };
+
         return profile;
     }
 
@@ -77,11 +86,18 @@ export class TherapistWorkflowService {
             await this.therapistCRUDService.getTherapistByKeycloakId(
                 therapistKeycloakId,
             );
-        const association = await this.associationService.createAssociation(
+        const association: AssociationDTO = {
             therapist,
             patient,
             status,
+            comment: localPatientDTO.comment,
+            lastStatusChange: new Date(),
+        }
+
+        await this.associationService.createAssociation(
+            association
         );
+
         console.log('createAssciation ', association);
 
         return patient;
@@ -92,7 +108,7 @@ export class TherapistWorkflowService {
             await this.associationService.getAssociations(keycloakId, status);
 
         const patientsWithSequence = associations.map((association, index) => ({
-            ...association.patient,
+            ...association,
             sequence: index + 1,
         }));
 
@@ -106,17 +122,13 @@ export class TherapistWorkflowService {
         patientId: string;
         therapistKeycloakId: string;
     }) {
-        const patient = await this.patientCRUDService.getPatient(patientId);
-        const therapist =
-            await this.therapistCRUDService.getTherapistByKeycloakId(
-                therapistKeycloakId,
-            );
-        await this.associationService.findAssociation({
+
+        const association = await this.associationService.getAssociation({
             patientId,
-            therapistId: therapist.id,
+            therapistKeycloakId,
         });
 
-        return patient;
+        return association.patient;
     }
 
     async updateNonRegisteredPatient({
@@ -133,13 +145,9 @@ export class TherapistWorkflowService {
         const patient = await this.patientCRUDService.getPatient(patientId);
         if (patient.keycloakId) return; //todo return error
 
-        const therapist =
-            await this.therapistCRUDService.getTherapistByKeycloakId(
-                therapistKeycloakId,
-            );
-        const association = await this.associationService.findAssociation({
+        const association = await this.associationService.getAssociation({
             patientId,
-            therapistId: therapist.id,
+            therapistKeycloakId
         });
 
         await this.patientCRUDService.updateLocalPatient(
@@ -155,12 +163,22 @@ export class TherapistWorkflowService {
         patientId: string,
         therapistKeycloakId: string,
     ) {
-        const patient = await this.getPatientWithAssociation({
+        const association: Association = await this.associationService.getAssociation({
             patientId,
-            therapistKeycloakId,
+            therapistKeycloakId
         });
-        if (patient.keycloakId) return;
 
-        await this.patientCRUDService.removePatient(patientId);
+        if (!association) {
+            throw new NotFoundException('Patient gehört nicht zu diesem Therapeuten');
+        }
+        console.log("therapistKeycloakId: ", therapistKeycloakId)
+        console.log("patientId: ", patientId)
+        console.log("patient: ", association.patient)
+        if (association.patient.keycloakId) {
+            throw new BadRequestException(
+            'Cannot delete registered patient; only manually added patients may be removed.',
+            );
+        }
+        await this.patientRepository.remove(association.patient);
     }
 }

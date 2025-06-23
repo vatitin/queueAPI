@@ -1,10 +1,15 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Patient } from 'src/patient/entity';
-import { Therapist } from 'src/therapist/entity';
 import { Repository } from 'typeorm';
 import { AssociationDTO } from '../association/create.dto';
 import { Association, StatusType } from '../association/entity';
+        
+interface AssociationFilter {
+    patientId?: string;
+    patientKeycloakId?: string;
+    therapistId?: string;
+    therapistKeycloakId?: string;
+}   
 
 @Injectable()
 export class AssociationService {
@@ -23,58 +28,66 @@ export class AssociationService {
 
     //todo use ids instead of full objects
     async createAssociation(
-        therapist: Therapist,
-        patient: Patient,
-        status: StatusType,
+        association: AssociationDTO,
     ) {
+        const associationExists = await this.findAssociation({
+            patientId: association.patient.id,
+            therapistId: association.therapist.id,
+        });
+
+        if (associationExists) {
+            throw new ConflictException(
+                'Patient is already applied to therapist',
+            );
+        }   
+
         const associationDTO: AssociationDTO = {
-            therapist: therapist,
-            patient: patient,
-            status,
+            ...association,
             lastStatusChange: new Date(),
         };
 
         await this.associationRepository.save(associationDTO);
     }
 
-    async getAssociation(patientId: string, therapistId: string) {
-        const association = await this.associationRepository.findOne({
-            where: {
-                patient: { id: patientId },
-                therapist: { id: therapistId },
-            },
-        });
-
-        if (!association) {
-            throw new NotFoundException(
-                'Patient-Therapist associationship could not be found',
-            );
+    async getAssociation(filter: AssociationFilter): Promise<Association> {
+        const association = await this.findAssociation(filter);
+        if(!association) {
+            throw new NotFoundException('Association not found');
         }
-    }
 
-    //todo check if its more practical to search after therapistKeycloakID instead of therapistId
-    async findAssociation({
-        patientId,
-        therapistId,
-    }: {
-        patientId: string;
-        therapistId: string;
-    }) {
-        const association = await this.associationRepository.findOne({
-            where: {
-                patient: { id: patientId },
-                therapist: { id: therapistId },
-            },
-        });
-        if (!association)
-            throw new NotFoundException(
-                'Patient-Therapist association not found',
-            );
         return association;
     }
 
+    async findAssociation(filter: AssociationFilter): Promise<Association | null> {
+        const qb = this.associationRepository
+            .createQueryBuilder('assoc')
+            .leftJoinAndSelect('assoc.patient', 'patient')
+            .leftJoinAndSelect('assoc.therapist', 'therapist');
+
+        if (filter.patientId) {
+            qb.andWhere('patient.id = :patientId', { patientId: filter.patientId });
+        }
+        if (filter.patientKeycloakId) {
+            qb.andWhere('patient.keycloakId = :patientKeycloakId', {
+            patientKeycloakId: filter.patientKeycloakId,
+            });
+        }
+        if (filter.therapistId) {
+            qb.andWhere('therapist.id = :therapistId', { therapistId: filter.therapistId });
+        }
+        if (filter.therapistKeycloakId) {
+            qb.andWhere('therapist.keycloakId = :therapistKeycloakId', {
+                therapistKeycloakId: filter.therapistKeycloakId,
+            });
+        }
+
+        const assoc = await qb.getOne();
+
+        return assoc;
+    }
+
     async removeAssociation(patientId: string, therapistId: string) {
-        const association = await this.findAssociation({
+        const association = await this.getAssociation({
             patientId: patientId,
             therapistId: therapistId,
         });
