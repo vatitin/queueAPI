@@ -60,6 +60,7 @@ export class PatientController {
     async getProfile(
       @AuthenticatedUser() keycloakUser: KeycloakUserDTO
     ) {
+        console.log("getProfile controller-----------------------")
       return await this.patientWorkflowService.getProfile(keycloakUser)
     }
 

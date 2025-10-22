@@ -1,7 +1,5 @@
 import {
-    BadRequestException,
     ConflictException,
-    HttpStatus,
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
@@ -11,7 +9,6 @@ import { Patient } from 'src/patient/entity';
 import { Repository } from 'typeorm';
 import { LocalPatientDTO } from '../patient/create-local.dto';
 import { AssociationService } from './association.service';
-import { Association } from 'src/association/entity';
 
 @Injectable()
 export class PatientCRUDService {

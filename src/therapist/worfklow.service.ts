@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { TherapistCRUDService } from '../domain/therapist.crud.service';
 import { AssociationDTO } from 'src/association/create.dto';
 import { Patient } from 'src/patient/entity';
+import { PatientDTO } from 'src/patient/create.dto';
 
 @Injectable()
 export class TherapistWorkflowService {
@@ -57,7 +58,7 @@ export class TherapistWorkflowService {
             postalCode: therapistFormDTO.postalCode,
             location: therapistFormDTO.location,
         };
-        const therapist = this.therapistRepository.create(therapistDTO);
+        const therapist = await this.therapistRepository.save(therapistDTO);
         return therapist;
     }
 
@@ -131,16 +132,37 @@ export class TherapistWorkflowService {
         return association.patient;
     }
 
-    async updateNonRegisteredPatient({
+    async updatePatientStatus({
+        patientId,
+        therapistKeycloakId,
+        newStatus,
+    }: {
+        patientId: string;
+        therapistKeycloakId: string;
+        newStatus: StatusType;
+    }) {
+        const association = await this.associationService.getAssociation({
+            patientId,
+            therapistKeycloakId,
+        });
+
+        if (!association) {
+            throw new NotFoundException('Patient not found for this therapist');
+        }
+
+        association.status = newStatus;
+        association.lastStatusChange = new Date();
+        await this.associationService.updateAssociation(association, {status: newStatus})
+    }
+
+    async updateLocalPatient({
         patientId,
         localPatientDTO,
         therapistKeycloakId,
-        status,
     }: {
         patientId: string;
         localPatientDTO: LocalPatientDTO;
         therapistKeycloakId: string;
-        status: StatusType;
     }) {
         const patient = await this.patientCRUDService.getPatient(patientId);
         if (patient.keycloakId) return; //todo return error
@@ -154,9 +176,6 @@ export class TherapistWorkflowService {
             patientId,
             localPatientDTO,
         );
-        await this.associationService.updateAssociation(association, {
-            status,
-        });
     }
 
     async removeNonRegisteredPatient(

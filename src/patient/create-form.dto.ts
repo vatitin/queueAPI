@@ -3,6 +3,9 @@ import { GenderType } from 'src/patient/entity';
 
 export class PatientFormDTO {
     @IsString()
+    email: string;
+
+    @IsString()
     firstName: string;
 
     @IsString()
@@ -15,4 +18,8 @@ export class PatientFormDTO {
     @IsString()
     @IsOptional()
     gender: GenderType;
+
+    @IsString()
+    @IsOptional()
+    comment: string;
 }

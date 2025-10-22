@@ -13,7 +13,6 @@ import {
 
 import { AuthenticatedUser, AuthGuard } from 'nest-keycloak-connect';
 import { Association, StatusType } from 'src/association/entity';
-import { AssociationService } from 'src/domain/association.service';
 import { KeycloakUserDTO } from 'src/keycloak-user.dto';
 import { LocalPatientDTO } from 'src/patient/create-local.dto';
 import { Patient } from 'src/patient/entity';
@@ -26,7 +25,6 @@ import { TherapistWorkflowService } from './worfklow.service';
 export class TherapistController {
     constructor(
         private therapistWorkflowService: TherapistWorkflowService,
-        private associationService: AssociationService,
     ) {}
 
     @Get('myProfile')
@@ -92,18 +90,31 @@ export class TherapistController {
 
     @Patch('updatePatient/:id/:status')
     @UsePipes(ValidationPipe)
-    async updatePatient(
+    async updateLocalPatient(
         @Param('id') patientId: string,
         @Param('status', new StatusTypeValidationPipe(false))
-        status: StatusType,
         @Body() localPatientDTO: LocalPatientDTO,
         @AuthenticatedUser() user: KeycloakUserDTO,
     ) {
-        await this.therapistWorkflowService.updateNonRegisteredPatient({
+        await this.therapistWorkflowService.updateLocalPatient({
             patientId,
             localPatientDTO,
             therapistKeycloakId: user.sub,
-            status,
+        });
+    }
+
+    @Patch('updatePatientStatus/:id/:newStatus')
+    @UsePipes(ValidationPipe)
+    async updatePatientStatus(
+        @Param('id') patientId: string,
+        @Param('newStatus', new StatusTypeValidationPipe(false))
+        newStatus: StatusType,
+        @AuthenticatedUser() user: KeycloakUserDTO,
+    ) {
+        await this.therapistWorkflowService.updatePatientStatus({
+            patientId,
+            therapistKeycloakId: user.sub,
+            newStatus,
         });
     }
 
