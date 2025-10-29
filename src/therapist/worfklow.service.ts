@@ -13,18 +13,20 @@ import { TherapistCRUDService } from '../domain/therapist.crud.service';
 import { AssociationDTO } from 'src/association/create.dto';
 import { Patient } from 'src/patient/entity';
 import { PatientDTO } from 'src/patient/create.dto';
+import { TherapistUpdateDTO } from './update.dto';
+import { CreateTherapistCommentDto } from 'src/comment/create-therapist-comment.dto';
+import { TherapistCommentService } from 'src/domain/therapist-comment.service';
 
 @Injectable()
 export class TherapistWorkflowService {
     constructor(
         @InjectRepository(Therapist)
         private readonly therapistRepository: Repository<Therapist>,
-        @InjectRepository(Patient)
-        private readonly patientRepository: Repository<Patient>,
-
         private readonly therapistCRUDService: TherapistCRUDService,
         private readonly patientCRUDService: PatientCRUDService,
         private readonly associationService: AssociationService,
+        private readonly commentService: TherapistCommentService,
+
     ) {}
 
     async hasLocalTherapist(keycloakUser: KeycloakUserDTO) {
@@ -67,13 +69,32 @@ export class TherapistWorkflowService {
         const therapist = await this.therapistCRUDService.getTherapistByKeycloakId(keycloakUser.sub);
         if (!therapist) throw new BadRequestException('Therapist could not be found');
 
-        const profile = { 
-            email: keycloakUser.email,
-            firstName: therapist.firstName,
-            lastName: therapist.lastName, 
-        };
+        return therapist;
+    }
 
-        return profile;
+    async updateMyProfile(keycloakId: string, dto: TherapistUpdateDTO) {
+    const entity = await this.therapistRepository.findOne({ where: { keycloakId } });
+    if (!entity) throw new NotFoundException('Therapist could not be found');
+
+    const {
+        firstName,
+        lastName,
+        addressLine1,
+        addressLine2,
+        city,
+        postalCode,
+    } = dto;
+
+    if (firstName !== undefined)  entity.firstName   = firstName;
+    if (lastName  !== undefined)  entity.lastName    = lastName;
+    
+    if (addressLine1 !== undefined) entity.addressLine1 = addressLine1;
+    if (addressLine2 !== undefined) entity.addressLine2 = addressLine2;
+    if (city !== undefined)         entity.city         = city;
+    if (postalCode !== undefined)   entity.postalCode   = postalCode;
+
+    await this.therapistRepository.save(entity);
+    return entity;
     }
 
     async addPatientToTherapist(
@@ -158,7 +179,6 @@ export class TherapistWorkflowService {
     async updateLocalPatient({
         patientId,
         localPatientDTO,
-        therapistKeycloakId,
     }: {
         patientId: string;
         localPatientDTO: LocalPatientDTO;
@@ -167,37 +187,61 @@ export class TherapistWorkflowService {
         const patient = await this.patientCRUDService.getPatient(patientId);
         if (patient.keycloakId) return; //todo return error
 
-        const association = await this.associationService.getAssociation({
-            patientId,
-            therapistKeycloakId
-        });
-
         await this.patientCRUDService.updateLocalPatient(
             patientId,
             localPatientDTO,
         );
     }
 
-    async removeNonRegisteredPatient(
+    async removeAssociation(
         patientId: string,
         therapistKeycloakId: string,
     ) {
-        const association: Association = await this.associationService.getAssociation({
-            patientId,
-            therapistKeycloakId
-        });
-
-        if (!association) {
-            throw new NotFoundException('Patient gehört nicht zu diesem Therapeuten');
-        }
-        console.log("therapistKeycloakId: ", therapistKeycloakId)
-        console.log("patientId: ", patientId)
-        console.log("patient: ", association.patient)
-        if (association.patient.keycloakId) {
-            throw new BadRequestException(
-            'Cannot delete registered patient; only manually added patients may be removed.',
-            );
-        }
-        await this.patientRepository.remove(association.patient);
+        return await this.associationService.removeAssociation(patientId, therapistKeycloakId);
     }
+
+    async createAssociationComment(params: {
+        associationId: string;
+        therapistKeycloakId: string;
+        dto: CreateTherapistCommentDto;
+    }) {
+        const { associationId, therapistKeycloakId, dto } = params;
+        return await this.commentService.createForAssociation({
+            associationId,
+            therapistKeycloakId,
+            text: dto.text.trim(),
+        });
+    }
+
+    async listAssociationComments(params: {
+        associationId: string;
+        therapistKeycloakId: string;
+    }) {
+        const { associationId, therapistKeycloakId } = params;
+        return await this.commentService.listForAssociation({ associationId, therapistKeycloakId });
+    }
+
+    async updateAssociationComment(params: {
+        commentId: string;
+        therapistKeycloakId: string;
+        dto: CreateTherapistCommentDto; // Reuse DTO for update
+    }) {
+        const { commentId, therapistKeycloakId, dto } = params;
+        return await this.commentService.update({
+            commentId,
+            therapistKeycloakId,
+            text: dto.text.trim(),
+        });
+    }
+
+    async removeAssociationComment(params: {
+        commentId: string;
+        therapistKeycloakId: string;
+    }) {
+        const { commentId, therapistKeycloakId } = params;
+        return await this.commentService.remove({
+            commentId,
+            therapistKeycloakId,
+        });
+  }
 }

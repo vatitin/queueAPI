@@ -9,16 +9,18 @@ import { Patient } from '../patient/entity';
 import { TherapistController } from './controller';
 import { Therapist } from './entity';
 import { TherapistWorkflowService } from './worfklow.service';
+import { TherapistCommentService } from 'src/domain/therapist-comment.service';
+import { TherapistComment } from 'src/comment/therapist-comment.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Patient, Therapist, Association]),
+        TypeOrmModule.forFeature([Patient, Therapist, TherapistComment, Association]),
         DomainModule,
         AuthModule,
         AssociationModule,
     ],
     controllers: [TherapistController],
-    providers: [TherapistCRUDService, TherapistWorkflowService],
+    providers: [TherapistCRUDService, TherapistWorkflowService, TherapistCommentService],
     exports: [TherapistCRUDService],
 })
 export class TherapistModule {}

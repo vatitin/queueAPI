@@ -29,6 +29,7 @@ export class PatientController {
         @AuthenticatedUser() keycloakUser: KeycloakUserDTO,
         @Body() patientFormDTO: PatientFormDTO,
     ) {
+        console.log("enter createPatient controller")
         await this.patientWorkflowService.createPatient(
             patientFormDTO,
             keycloakUser,

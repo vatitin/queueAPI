@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssociationDTO } from '../association/create.dto';
 import { Association, StatusType } from '../association/entity';
+import { Patient } from 'src/patient/entity';
         
 interface AssociationFilter {
     patientId?: string;
@@ -16,6 +17,9 @@ export class AssociationService {
     constructor(
         @InjectRepository(Association)
         private readonly associationRepository: Repository<Association>,
+
+        @InjectRepository(Patient)
+        private readonly patientRepository: Repository<Patient>,
     ) {}
 
     async updateAssociation(
@@ -86,20 +90,28 @@ export class AssociationService {
         return assoc;
     }
 
-    async removeAssociation(patientId: string, therapistId: string) {
+    //example of how to make a transactional operation
+    async removeAssociation(patientId: string, therapistKeycloakId: string) {
         const association = await this.getAssociation({
             patientId: patientId,
-            therapistId: therapistId,
+            therapistKeycloakId: therapistKeycloakId,
+        });
+        
+        if (!association) {
+            throw new NotFoundException('Patient gehört nicht zu diesem Therapeuten');
+        }
+
+        await this.associationRepository.manager.transaction(async (manager) => {
+        await manager.remove(Association, association);
+        if (!association.patient.keycloakId) {
+            await manager.remove(Patient, association.patient);
+        }
         });
 
-        await this.associationRepository.remove(association);
         return {
-            status: HttpStatus.OK,
+            status: HttpStatus.NO_CONTENT,
             message: 'Patient-Therapist association removed',
         };
-
-        //todo remove patient in relation
-        //const patient = await this.patientService.removePatientIfNotRegistered()
     }
 
     async getAssociations(therapistKeycloakId: string, status: StatusType) {

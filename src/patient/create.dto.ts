@@ -5,4 +5,6 @@ export class PatientDTO extends PatientFormDTO {
     @IsUUID()
     keycloakId: string;
 
+    @IsString()
+    email: string;
 }

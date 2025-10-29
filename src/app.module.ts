@@ -8,6 +8,7 @@ import { Patient } from './patient/entity';
 import { PatientModule } from './patient/module';
 import { Therapist } from './therapist/entity';
 import { TherapistModule } from './therapist/module';
+import { TherapistComment } from './comment/therapist-comment.entity';
 
 @Module({
     imports: [
@@ -23,7 +24,7 @@ import { TherapistModule } from './therapist/module';
             username: 'myuser',
             password: 'mypass',
             database: 'platformDB',
-            entities: [Therapist, Patient, Association],
+            entities: [Therapist, Patient, Association, TherapistComment],
             //todo set this to false before production
             synchronize: true,
         }),

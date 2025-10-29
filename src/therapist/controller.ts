@@ -3,6 +3,8 @@ import {
     Controller,
     Delete,
     Get,
+    HttpCode,
+    HttpStatus,
     Param,
     Patch,
     Post,
@@ -19,6 +21,8 @@ import { Patient } from 'src/patient/entity';
 import { StatusTypeValidationPipe } from './statusType.validation.pipe';
 import { TherapistFormDTO } from './TherapistFormDTO.entity';
 import { TherapistWorkflowService } from './worfklow.service';
+import { TherapistUpdateDTO } from './update.dto';
+import { CreateTherapistCommentDto } from 'src/comment/create-therapist-comment.dto';
 
 @UseGuards(AuthGuard)
 @Controller('therapist')
@@ -88,6 +92,15 @@ export class TherapistController {
         return patient;
     }
 
+    @Patch('myProfile')
+    @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
+    async updateMyProfile(
+        @AuthenticatedUser() therapist: KeycloakUserDTO,
+        @Body() dto: TherapistUpdateDTO,
+    ) {
+        return await this.therapistWorkflowService.updateMyProfile(therapist.sub, dto);
+    }
+
     @Patch('updatePatient/:id/:status')
     @UsePipes(ValidationPipe)
     async updateLocalPatient(
@@ -124,9 +137,66 @@ export class TherapistController {
         @AuthenticatedUser() user: KeycloakUserDTO,
     ) {
         console.log('removePatient');
-        await this.therapistWorkflowService.removeNonRegisteredPatient(
+        await this.therapistWorkflowService.removeAssociation(
             patientId,
             user.sub,
         );
+    }
+
+    @Post('association/:associationId/comment')
+    @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
+    async createAssociationComment(
+        @Param('associationId') associationId: string,
+        @AuthenticatedUser() user: KeycloakUserDTO,
+        @Body() dto: CreateTherapistCommentDto,
+    ) {
+        return await this.therapistWorkflowService.createAssociationComment({
+            associationId,
+            therapistKeycloakId: user.sub,
+            dto,
+        });
+    }
+
+    @Get('association/:associationId/comments')
+    async listAssociationComments(
+        @Param('associationId') associationId: string,
+        @AuthenticatedUser() user: KeycloakUserDTO,
+    ) {
+        return await this.therapistWorkflowService.listAssociationComments({
+            associationId,
+            therapistKeycloakId: user.sub,
+        });
+    }
+
+    @Patch('association/comment/:commentId')
+    @UsePipes(
+        new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        }),
+    )
+    async updateAssociationComment(
+        @Param('commentId') commentId: string,
+        @AuthenticatedUser() user: KeycloakUserDTO,
+        @Body() dto: CreateTherapistCommentDto,
+    ) {
+        return await this.therapistWorkflowService.updateAssociationComment({
+        commentId,
+        therapistKeycloakId: user.sub, 
+        dto,
+        });
+    }
+
+    @Delete('association/comment/:commentId')
+    @HttpCode(HttpStatus.NO_CONTENT) 
+    async removeAssociationComment(
+        @Param('commentId') commentId: string,
+        @AuthenticatedUser() user: KeycloakUserDTO,
+    ) {
+        return await this.therapistWorkflowService.removeAssociationComment({
+            commentId,
+            therapistKeycloakId: user.sub,
+        });
     }
 }

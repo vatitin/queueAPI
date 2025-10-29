@@ -10,8 +10,8 @@ export enum StatusType {
 
 @Entity()
 export class Association {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({
         type: 'timestamp',

@@ -2,8 +2,8 @@ import { IsOptional, IsString } from 'class-validator';
 import { GenderType } from 'src/patient/entity';
 
 export class PatientFormDTO {
-    @IsString()
-    email: string;
+    // @IsString()
+    // email: string;
 
     @IsString()
     firstName: string;
